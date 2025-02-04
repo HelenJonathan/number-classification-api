@@ -29,8 +29,6 @@ This is a simple API that takes a number as input and returns its mathematical p
    ```sh
    npm install
    ```
-
-   ```
 4. **Run the server:**
    ```sh
    node server.js
