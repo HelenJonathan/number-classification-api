@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
@@ -31,17 +30,18 @@ const isPerfect = (num) => {
 };
 
 const isArmstrong = (num) => {
-  const digits = num.toString().split("");
+  const digits = Math.abs(num).toString().split("");
   const power = digits.length;
   const sum = digits.reduce(
     (acc, digit) => acc + Math.pow(parseInt(digit), power),
     0
   );
-  return sum === num;
+  return sum === Math.abs(num);
 };
 
+// Support negative numbers for digit sum calculation
 const getDigitSum = (num) =>
-  num
+  Math.abs(num)
     .toString()
     .split("")
     .reduce((sum, digit) => sum + parseInt(digit), 0);
@@ -49,17 +49,17 @@ const getDigitSum = (num) =>
 // Root route
 app.get("/", (req, res) => {
   res.send(
-    "Welcome to the Number Classification API! Use /api/classify-number/371 to get number properties."
+    "Welcome to the Number Classification API! Use /api/classify-number?number=371 to get number properties."
   );
 });
 
-// API Endpoint using URL parameters
-app.get("/api/classify-number/:number", async (req, res) => {
-  const { number } = req.params;
+// API Endpoint using query parameter
+app.get("/api/classify-number", async (req, res) => {
+  const { number } = req.query;
 
   // Validate input
   if (!number || isNaN(number) || !Number.isInteger(Number(number))) {
-    return res.status(400).json({ number, error: true }); // Error response format
+    return res.status(400).json({ number: "alphabet", error: true });
   }
 
   const num = parseInt(number);
@@ -72,19 +72,8 @@ app.get("/api/classify-number/:number", async (req, res) => {
   // Get fun fact
   let funFact = "No fun fact available.";
   try {
-    // Fetch fun fact from Numbers API
     const response = await axios.get(`http://numbersapi.com/${num}/math?json`);
-
-    // Check if the number is Armstrong and generate a fun fact
-    if (isArmstrong(num)) {
-      funFact = `${num} is an Armstrong number because ${num
-        .toString()
-        .split("")
-        .map((digit) => `${digit}^${digit.length}`)
-        .join(" + ")} = ${num}`;
-    } else {
-      funFact = response.data.text;
-    }
+    funFact = response.data.text;
   } catch (error) {
     console.error("Error fetching fun fact:", error.message);
   }
@@ -102,4 +91,3 @@ app.get("/api/classify-number/:number", async (req, res) => {
 
 // Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
